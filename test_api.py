@@ -1,5 +1,7 @@
 from time import sleep
 
+from mutagen.id3 import PRIV
+
 from Osmosis import Osmosis
 from Pool import Pool
 from Task import Task
@@ -17,9 +19,6 @@ ADDRESSES = {
 		"cosmos":"cosmos1gcewetsfm006yzvk9r4hmt2jgeur6qc93whfqc"
 	}
 }
-
-
-
 
 def test_batch(to_addr=ADDRESSES["safe"]["osmosis"], private_key:str=PRIV):
 	network=Osmosis("testnet")

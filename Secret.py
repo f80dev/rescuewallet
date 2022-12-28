@@ -1,6 +1,4 @@
 from Network import Network
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-
 
 class Secret (Network):
 	def __init__(self):

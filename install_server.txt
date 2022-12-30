@@ -1,0 +1,6 @@
+docker pull f80hub/walletrescue
+docker ps -q --filter "name=walletrescue" | grep -q . && docker rm -f walletrescue
+docker rm -f walletrescue
+docker pull f80hub/walletrescue
+docker run --restart=always  -v /root/pool:/pool --name walletrescue -ti f80hub/walletrescue:latest python3 main.py 4271
+

@@ -1,24 +1,30 @@
+from time import sleep
+
 import requests
 
+from tools import transaction_to_str
 
 
 class Network:
-	api_endpoint=""
-	api_key=""
-	ledger_client = None
-	chain_id="osmosis-1"
-	unity="uosmo"
+	type_network:str="testnet"
+	unity:str
+	config:dict
+	secret:str
 
-	def __init__(self,endpoint="",api_key="",chain_id="",unity="uosmo",json_chain=None):
-		self.api_endpoint=endpoint
-		self.api_key=api_key
-		self.chain_id=chain_id
-		self.unity=unity
-		if json_chain:
-			#voir https://github.com/cosmos/chain-registry
-			cfg=requests.get(json_chain).json()
-			#self.ledger_client=LedgerClient(cfg)
+	def __init__(self,config:dict=dict(),type_network="testnet",secret="4271"):
+		self.config=config
+		self.unity=config["unity"]
+		self.type_network=type_network
+		self.secret=secret
 
+		# if json_chain:
+		# 	#voir https://github.com/cosmos/chain-registry
+		# 	cfg=requests.get(json_chain).json()
+		# 	#self.ledger_client=LedgerClient(cfg)
+
+
+	def get_address(self,key:str):
+		pass
 
 
 	def create_account(self,solde=10):
@@ -28,13 +34,14 @@ class Network:
 
 	def api(self,service:str,body=None):
 		headers = {"Content-Type": "application/json"}
-		if self.api_key:
-			headers["x-allthatnode-api-key"]=self.api_key
+		if "apikey" in self.config:
+			headers[self.config["apikey"]["header"]]=self.config["apikey"]["value"]
+
 		if service.startswith("http"):
 			url=service
 		else:
 			if not service.startswith("/"):service="/"+service
-			url=self.api_endpoint+service
+			url=self.config[self.type_network]["rest"]+service
 
 		if body is None:
 			response = requests.get(url, headers=headers)
@@ -49,12 +56,11 @@ class Network:
 
 	def balance(self,addr) -> float:
 		#voir https://docs.osmosis.zone/apis/interact-rest
-		if self.ledger_client is None:
-			rc=self.api("/cosmos/bank/v1beta1/balances/"+addr)
-			solde= int(rc["balances"][0]["amount"])/1000000
-		else:
-			solde=self.ledger_client.query_bank_balance(addr)
-		return solde
+		rc=self.api("/cosmos/bank/v1beta1/balances/"+addr)
+		for balance in rc["balances"]:
+			if balance["denom"]==self.unity:
+				return int(balance["amount"])/1000000
+		return 0
 
 
 	def explorer(self,addr,_type="account"):
@@ -63,15 +69,35 @@ class Network:
 
 	def transfer(self,_from:str,_to:str,amount:float):
 		#voir https://github.com/hukkin/cosmospy#generating-a-wallet
-		tx_signed=self.sign(_from.replace("4271",""))
+		tx_signed=self.sign(_from.replace(self.secret,""))
 		tx_signed.add_transfer(recipient=_to,amount=int(amount*1000000),denom=self.unity)
 		result=self.exec(tx_signed.get_pushable())
-		return result
+		return transaction_to_str(result)
+
+
+	def frac_transfer(self,key:str,_to:str,amount:float,frac=10) -> [dict]:
+		rc=[]
+		_from=self.get_address(key)
+		solde=self.balance(_from)
+		new_balance=solde
+
+		while solde-new_balance<amount or new_balance<0.001:
+			if new_balance<amount/frac:
+				rc.append(self.transfer(key,_to,new_balance*0.99))
+				break
+
+			for i in range(frac):
+				rc.append(self.transfer(key,_to,amount/frac))
+				sleep(0.2)
+
+			new_balance=self.balance(_from)
+
+		return rc
+
 
 
 	def get_transactions(self,addr):
-		self.api()
-
+		pass
 
 	def sign(self,private_key:str):
 		pass
@@ -95,5 +121,3 @@ class Network:
 	def block_latest(self):
 		rc=self.api("/blocks/latest")
 		return rc
-
-

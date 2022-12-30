@@ -1,0 +1,23 @@
+validators:
+  allthatnode:   #voir https://www.allthatnode.com/osmosis.dsrv
+    osmosis:
+      unity: uosmo
+      apikey:
+        value: "vxLOEqL34271dgp1ligsKnjHL9BJUbVs8hOB"
+        header: "x-allthatnode-api-key"
+
+      testnet:
+        chain_id: "osmo-test-4"
+        rest: https://osmosis-testnet-rpc.allthatnode.com:1317
+        rpc: https://osmosis-testnet-rpc.allthatnode.com:26657
+
+      mainnet:
+        chain_id: "osmosis-1"
+        rest: https://osmosis-mainnet-rpc.allthatnode.com:1317
+        rpc: https://osmosis-mainnet-rpc.allthatnode.com:26657
+
+    cosmos:
+      apikey:
+        value: "CWgWXZRlcVfqfr8tKQdGXekc4271ArhOdu4H"
+        header: "x-allthatnode-api-key"
+

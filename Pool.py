@@ -1,23 +1,65 @@
-import logging
+from os import listdir
+from time import sleep
 
 from Task import Task
-
+from tools import now
 
 class Pool:
     pool:[Task]=[]
-    log: logging.Logger
+    log_path=None
+    logs:[str]=[]
 
-    def __init__(self,poolname:str="MaPool"):
-        self.log= logging.Logger(poolname,logging.INFO)
+    def log(self,line:str):
+        if len(line)>0:
+            content=now("str")+" - "+line
+            print(content)
+            self.logs.append(content)
+
+    def __init__(self,secret,config):
+        self.pool=[]
+        self.secret=secret
+        self.config=config
 
     def add(self,task:Task):
-        self.pool.append(task)
+        if not task.id in [x.id for x in self.pool]:
+            self.pool.append(task)
+
+    def load_from_dir(self,dir):
+        print("Chargement du répertoire "+dir)
+        if not dir.endswith("/"):dir=dir+"/"
+        for f in listdir(dir):
+            if f.endswith("yaml"):
+                self.add(Task(file=dir+f))
+        return self.count()
+
+
+    def write_log(self,path:str):
+        print("Ecriture du journal")
+        self.logs.insert(0,now("str"))
+        with open(path,"a") as f:
+            f.writelines("\n".join(self.logs))
+            f.close()
 
     def raz(self):
         self.pool.clear()
 
-    def run(self):
-        n_exec=0
-        for t in self.pool:
-            if t.exec(self.log): n_exec=n_exec+1
-        return n_exec
+
+    def get_state(self):
+        rc=[str(x) for x in self.pool]
+        return "\n".join(rc)
+
+    def run(self,end_process=None):
+        print("Execution de la boucle")
+        if end_process is None: end_process=now()+10
+        while end_process>now():
+            for t in self.pool:
+                rc=t.exec(secret=self.secret)
+                self.log("\n".join(rc))
+                sleep(0.1)
+
+    def count(self):
+        return len(self.pool)
+
+    def clear(self):
+        self.raz()
+

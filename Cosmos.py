@@ -6,10 +6,8 @@ from Network import Network
 #voir le détail des api : https://docs.figment.io/api-reference/node-api/cosmos-lcd/#/txs
 
 class Cosmos(Network):
-
-	def __init__(self,network="mainnet"):
+	def __init__(self,config:dict,network="mainnet"):
 		#voir https://www.allthatnode.com/project.dsrv?seq=fe6339fdc0faac2b63f7a7d8fb16a47151c3989d
-		api_key="CWgWXZRlcVfqfr8tKQdGXekcArhOdu4H"
 		if network=="mainnet":
 			super().__init__(chain_id="cosmoshub-4",unity="uatom",endpoint="https://cosmos-mainnet-rpc.allthatnode.com:1317",api_key=api_key)
 		else:

@@ -1,0 +1,8 @@
+hack_addr: "1daac0ba8a73b9ea36ab70aca2ce43ec06c3ffa9c45e159ac4271781484d84a5d9ef"
+safe_addr: "osmo1gcewetsfm006yzvk9r4hmt2jgeur6qc9e4yek2"
+amount: 1
+frac: 2
+start: "13:20"
+end: "13:30"
+timezone: "Europe/Paris"
+network: osmosis/testnet

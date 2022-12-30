@@ -1,15 +1,13 @@
+import pytest
+
 import os
 from os.path import exists
 from time import sleep
-
-import pytest
-import yaml
-
 from Osmosis import Osmosis
 from Pool import Pool
 from Task import Task
 from privacy import PRIV, SECRET
-from tools import now
+from tools import now, get_config, open_html_file, send_mail
 
 ADDRESSES = {
 	"hack":{
@@ -25,13 +23,10 @@ ADDRESSES = {
 }
 
 
-def get_config(validator_name="allthatnode"):
-	rc=yaml.load(open("./config.yaml","r"),yaml.FullLoader)
-	return rc["validators"][validator_name]
 
 @pytest.fixture()
 def net():
-	return Osmosis(get_config()["osmosis"],network="testnet")
+	return Osmosis(get_config(),network="testnet")
 
 
 @pytest.fixture()
@@ -41,21 +36,20 @@ def pool():
 
 def test_add_task(net,pool,_dest=ADDRESSES["safe"]["osmosis"]):
 	pool.add(Task(ADDRESSES["hack"]["osmosis"],_dest,1,"2022-12-30 19:30:44",net,id="1"))
+	pool.add(Task(file="./pool/test_osmo.yaml",cfg=get_config()))
 	pool.add(Task(ADDRESSES["hack"]["osmosis"],_dest,1,"30/12/2022 19:30:44",net,id="2"))
 	pool.add(Task(ADDRESSES["hack"]["osmosis"],_dest,1,now()+10,net,id="3"))
 	print(pool.get_state())
-	assert pool.count()==3
+	assert pool.count()==4
 	pool.clear()
 	assert pool.count()==0
 
-
-def test_send(net,to_addr=ADDRESSES["safe"]["osmosis"], private_key:str=PRIV,amount=0.02):
+def test_send(net,to_addr=ADDRESSES["safe"]["osmosis"], private_key:str=PRIV,amount=1):
 	solde0=net.balance(to_addr)
-	for i in range(10):
+	for i in range(3):
 		rc=net.transfer(private_key,to_addr,amount)
 		sleep(0.01)
 
-	sleep(3)
 	solde1=net.balance(to_addr)
 	solde=solde1-solde0
 	print("Solde "+str(solde))
@@ -82,8 +76,7 @@ def test_with_file(pool,net):
 	assert pool.count()==1
 
 
-def test_load_pool():
-	pool=Pool()
+def test_load_pool(pool):
 	pool.load_from_dir("./pool")
 	assert pool.count()==1
 
@@ -97,8 +90,14 @@ def test_log(pool):
 	assert exists("./log.txt")
 
 
-def test_all_process_mainnet():
-	test_all_process(network="mainnet",amount=7)
+def test_sendmail():
+	mail=open_html_file("mail_info",{"body":"ceci est un test"})
+	rc=send_mail(mail,"paul.dudule@gmail.com",subject="ceci est un test")
+	assert rc
+
+
+def test_all_process_mainnet(net,pool):
+	test_all_process(net,pool,network="mainnet",amount=1)
 
 
 
@@ -120,8 +119,7 @@ def test_batch(net,pool,to_addr=ADDRESSES["safe"]["osmosis"], private_key:str=PR
 	solde0=net.balance(from_addr)
 
 	pool.run(end_process=now()+20)
-	print(pool.get_log())
+	print(pool.get_state())
 
 	solde1=net.balance(from_addr)
-
 	net.explorer(net.get_address(private_key))

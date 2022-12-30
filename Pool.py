@@ -8,6 +8,7 @@ class Pool:
     pool:[Task]=[]
     log_path=None
     logs:[str]=[]
+    secret:str=""
 
     def log(self,line:str):
         if len(line)>0:
@@ -29,7 +30,7 @@ class Pool:
         if not dir.endswith("/"):dir=dir+"/"
         for f in listdir(dir):
             if f.endswith("yaml"):
-                self.add(Task(file=dir+f))
+                self.add(Task(file=dir+f,cfg=self.config))
         return self.count()
 
 
@@ -45,7 +46,8 @@ class Pool:
 
 
     def get_state(self):
-        rc=[str(x) for x in self.pool]
+        rc=["Etat de la pool"]
+        rc=rc+[str(x) for x in self.pool]
         return "\n".join(rc)
 
     def run(self,end_process=None):

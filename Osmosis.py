@@ -5,11 +5,10 @@ from Network import Network
 class Osmosis (Network):
 	def __init__(self,config:dict,network="mainnet"):
 		#voir https://www.allthatnode.com/osmosis.dsrv
-		super().__init__(config)
-
+		super().__init__(config["osmosis"],type_network=network)
 
 	def get_address(self,key):
-		return privkey_to_address(privkey=bytes.fromhex(key.replace(self.secret,"")))
+		return privkey_to_address(privkey=bytes.fromhex(key))
 
 	def exec(self,signed_tx):
 		url=self.config[self.type_network]["rpc"]

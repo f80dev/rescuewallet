@@ -1,18 +1,16 @@
 import sys
 
-import yaml
-
 from Pool import Pool
-from tools import now
-
+from tools import now, get_config
 
 pool=Pool(
 	secret=sys.argv[1],
-	config=yaml.load(open("./config.yaml","r"),yaml.FullLoader)
+	config=get_config(sys.argv[2] if len(sys.argv)>2 else "allthatnode")
 )
-print("Lancement du serveur avec "+pool.secret)
 
+print("Lancement du serveur avec "+pool.secret)
 while True:
 	pool.load_from_dir("./pool")
-	pool.run(end_process=now()+10*60)
+	print(pool.get_state())
+	pool.run()
 	pool.write_log("./log.txt")

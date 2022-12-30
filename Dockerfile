@@ -39,7 +39,9 @@ RUN pip3 -v install osmopy
 RUN pip3 -v install pyyaml
 RUN pip3 -v install python-dateutil
 RUN pip3 -v install pytz
+RUN pip3 -v install smtplib
 RUN pip3 -v install protobuf==3.20.0
+
 
 WORKDIR /
 

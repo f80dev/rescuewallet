@@ -9,13 +9,11 @@ class Network:
 	type_network:str="testnet"
 	unity:str
 	config:dict
-	secret:str
 
-	def __init__(self,config:dict=dict(),type_network="testnet",secret="4271"):
+	def __init__(self,config:dict=dict(),type_network="testnet"):
 		self.config=config
 		self.unity=config["unity"]
 		self.type_network=type_network
-		self.secret=secret
 
 		# if json_chain:
 		# 	#voir https://github.com/cosmos/chain-registry
@@ -69,7 +67,7 @@ class Network:
 
 	def transfer(self,_from:str,_to:str,amount:float):
 		#voir https://github.com/hukkin/cosmospy#generating-a-wallet
-		tx_signed=self.sign(_from.replace(self.secret,""))
+		tx_signed=self.sign(_from)
 		tx_signed.add_transfer(recipient=_to,amount=int(amount*1000000),denom=self.unity)
 		result=self.exec(tx_signed.get_pushable())
 		return transaction_to_str(result)
@@ -88,7 +86,7 @@ class Network:
 
 			for i in range(frac):
 				rc.append(self.transfer(key,_to,amount/frac))
-				sleep(0.2)
+				sleep(0.1)
 
 			new_balance=self.balance(_from)
 
